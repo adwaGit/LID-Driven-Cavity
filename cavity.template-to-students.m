@@ -492,8 +492,22 @@ global u
 % !************************************************************** */
 % !************ADD CODING HERE FOR INTRO CFD STUDENTS************ */
 % !************************************************************** */
-
-
+%Left Boundary---------------------------------------------
+u(1,:,1) = 2.*u(2,:,1) - u(3,:,1);              %Pressure
+u(1,:,2) = 0;                                   %x-velocity
+u(1,:,3) = 0;                                   %y-velocity
+%Right Boundary--------------------------------------------
+u(end,:,1) = 2.*u(end-1,:,1) - u(end-2,:,1);    %Pressure
+u(end,:,2) = 0;                                 %x-velocity
+u(end,:,3) = 0;                                 %y-velocity
+%Bottom Boundary-------------------------------------------
+u(:,1,1) = 2.*u(:,2,1) - u(:,3,1);              %Pressure
+u(:,1,2) = 0;                                   %x-velocity
+u(:,1,3) = 0;                                   %y-velocity
+%Top Boundary----------------------------------------------
+u(:,end,1) = 2.*u(:,end-1,1) - u(:,end-2,1);    %Pressure
+u(:,end,2) = ulid;                              %x-velocity
+u(:,end,3) = 0;                                 %y-velocity
 
 end
 %************************************************************************
@@ -845,11 +859,26 @@ global u dt
 % !************************************************************** */
 % !************ADD CODING HERE FOR INTRO CFD STUDENTS************ */
 % !************************************************************** */
-
-
-
-
+%define consts
+dtvisc = (dx*dy)/(four*(rmu/rho)); %diffusive time step
+dtmax = -99.9;                     %dummy value for max time step
+%loop for minimum timestep
+for i = 2:imax-1
+    for j = 2:jmax-1
+        beta2(i,j) = max(u(i,j,2)*u(i,j,2)+u(i,j,3)*u(i,j,3),rkappa*ulid*ulid);     %calculate beta^2
+        lambda_x(i,j) = half*(abs(u(i,j,2))+sqrt(u(i,j,2)*u(i,j,2)+four*beta2));    %find x eigenvalue
+        lambda_y(i,j) = half*(abs(u(i,j,3))+sqrt(u(i,j,3)*u(i,j,3)+four*beta2));    %find y eigenvalue
+        lambda_max(i,j) = max(lambda_x(i,j),lambda_y(i,j));                         %find max eigenvalue
+        dtcon(i,j) = min(dx,dy)/abs(lambda_max(i,j));                               %convective time step
+        dtmin(i,j) = min(dtcon(i,j),dtvisc,dtvsic);                                 %define minimum timestep at point
+        dtmax = min(dtmin(i,j),dtmax);                                              %calculate max time step for global time stepping
+    end
 end
+%check if we are using global or local time stepping
+if dt_flag == 1
+    dtmin(:,:) = dtmax;
+end
+
 %************************************************************************
 function Compute_Artificial_Viscosity(~)
 %
@@ -883,8 +912,18 @@ global artviscx artviscy
 % !************************************************************** */
 % !************ADD CODING HERE FOR INTRO CFD STUDENTS************ */
 % !************************************************************** */
+for i = 2:imax-1
+    for j = 2:jmax-1
+        beta2(i,j) = max(u(i,j,2)*u(i,j,2)+u(i,j,3)*u(i,j,3),rkappa*ulid*ulid);     %calculate beta^2        
+        lambda_x(i,j) = half*(abs(u(i,j,2))+sqrt(u(i,j,2)*u(i,j,2)+four*beta2));    %find x eigenvalue
+        lambda_y(i,j) = half*(abs(u(i,j,3))+sqrt(u(i,j,3)*u(i,j,3)+four*beta2));    %find y eigenvalue
+        d4pdx4(i,j) = u(i-2,j,1)-four*u(i-1,j,1)+six*u(i,j,1)-four*u(i+1,j,1)+u(i+2,j,1))/dx;
+        d4pdy4(i,j) = u(i,j-2,1)-four*u(i,j-1,1)+six*u(i,j,1)-four*u(i,j+1,1)+u(i,j+2,1))/dy;
 
-
+        artviscx(i,j) = -((abs(lambda_x(i,j))*Cx)/beta2(i,j))*d4pdx4(i,j);
+        artviscy(i,j) = -((abs(lambda_y(i,j))*Cy)/beta2(i,j))*d4pdy4(i,j);
+    end
+end
 
 
 end
