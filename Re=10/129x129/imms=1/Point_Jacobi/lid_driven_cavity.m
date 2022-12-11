@@ -1,4 +1,4 @@
-function [PrsMatrix, uvelMatrix, vvelMatrix] = cavity_solver(~)
+function [] = cavity_solver(~)
 tic   %begin timer function
 %--- Variables for file handling ---
 %--- All files are globally accessible ---

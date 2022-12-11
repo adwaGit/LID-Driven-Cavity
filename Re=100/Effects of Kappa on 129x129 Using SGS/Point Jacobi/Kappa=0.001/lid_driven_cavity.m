@@ -1,4 +1,4 @@
-function [PrsMatrix, uvelMatrix, vvelMatrix] = cavity_solver(~)
+function [] = cavity_solver(~)
 tic   %begin timer function
 %--- Variables for file handling ---
 %--- All files are globally accessible ---
@@ -26,8 +26,8 @@ global artviscy;  % Artificial viscosity in y-direction
 global ummsArray; % Array of umms values (funtion umms evaluated at all nodes)
 
 %************ Following are fixed parameters for array sizes *************
-imax = 257;   	% Number of points in the x-direction (use odd numbers only)
-jmax = 257;   	% Number of points in the y-direction (use odd numbers only)
+imax = 129;   	% Number of points in the x-direction (use odd numbers only)
+jmax = 129;   	% Number of points in the y-direction (use odd numbers only)
 neq = 3;       % Number of equation to be solved ( = 3: mass, x-mtm, y-mtm)
 %********************************************
 %***** All  variables declared here. **
@@ -66,7 +66,7 @@ cfl  = 0.5;      % CFL number used to determine time step
 Cx = 0.01;     	% Parameter for 4th order artificial viscosity in x
 Cy = 0.01;      	% Parameter for 4th order artificial viscosity in y
 toler = 1.e-10; 	% Tolerance for iterative residual convergence
-rkappa = 0.1;   	% Time derivative preconditioning constant
+rkappa = 0.001;   	% Time derivative preconditioning constant
 Re = 100.0;      	% Reynolds number = rho*Uinf*L/rmu
 pinf = 0.801333844662; % Initial pressure (N/m^2) -> from MMS value at cavity center
 uinf = 1.0;      % Lid velocity (m/s)
